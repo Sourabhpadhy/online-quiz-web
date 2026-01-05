@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Online Assessment</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --purple: #6f42c1;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; background-color: #eef2f5; }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .profile-section { padding: 20px; border-bottom: 1px solid #eee; background: #fdfdfd; }
+        .profile-section h4 { margin: 0; color: var(--dark); }
+        .grid-container { flex: 1; padding: 15px; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        
+        .grid-item {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: all 0.2s;
+        }
+        .grid-item:hover { transform: scale(1.05); }
+
+        .status-ANSWERED { background-color: var(--success); color: white; border-color: var(--success); }
+        .status-NOT_ANSWERED { background-color: var(--danger); color: white; border-color: var(--danger); }
+        .status-MARKED_FOR_REVIEW { background-color: var(--warning); color: #333; border-color: var(--warning); }
+        .status-ANSWERED_MARKED_FOR_REVIEW { background-color: var(--purple); color: white; border-color: var(--purple); }
+        .status-NOT_VISITED { background-color: #e9ecef; }
+        .current-q { box-shadow: 0 0 0 3px rgba(0,123,255,0.4); border-color: var(--primary) !important; }
+
+        .legend { padding: 15px; border-top: 1px solid #eee; font-size: 0.8rem; background: #fff; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; display: inline-block; }
+
+        .main-area { flex: 1; display: flex; flex-direction: column; height: 100%; }
+        
+        .top-bar {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .timer-box { 
+            background: #fff3cd; 
+            color: #856404; 
+            padding: 8px 15px; 
+            border-radius: 4px; 
+            border: 1px solid #ffeeba;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .question-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .q-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .q-header { font-size: 1.3rem; margin-bottom: 25px; color: #333; line-height: 1.5; font-weight: 600; }
+        
+        .option-label {
+            display: flex;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            align-items: center;
+        }
+        .option-label:hover { background-color: #f1f8ff; border-color: #cce5ff; }
+        .option-label input { margin-right: 15px; transform: scale(1.2); }
+        .option-label:has(input:checked) { border-color: var(--primary); background-color: #e7f1ff; }
+
+        .footer-controls {
+            padding: 20px 40px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn { padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: #212529; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+    </style>
+    
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            let display = document.getElementById('time');
+            setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                
+                if (display) {
+                    display.textContent = minutes + ":" + seconds;
+                }
+
+                if (--timer < 0) {
+                    document.getElementById('quizForm').action = '/submitAnswer?action=submit';
+                    document.getElementById('quizForm').submit();
+                }
+            }, 1000);
+        }
+
+        window.onload = function () {
+            var time = /*[[${timeLeft}]]*/ 600; 
+            startTimer(time);
+        };
+    /*]]>*/
+    </script>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="profile-section">
+            <h4 th:text="${name}">Student Name</h4>
+            <small style="color: #666;">ID: #839201</small>
+        </div>
+        
+        <form th:action="@{/submitAnswer}" method="post" id="navForm" class="grid-container">
+            <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 10px;">Question Palette:</p>
+            <div class="grid">
+                <button th:each="entry : ${questionStatus}" 
+                        th:classappend="'grid-item status-' + ${entry.value} + (${entry.key} == ${index} ? ' current-q' : '')"
+                        type="submit" name="action" th:value="${entry.key}"
+                        th:text="${entry.key + 1}">1</button>
+            </div>
+        </form>
+
+        <div class="legend">
+            <div class="legend-item"><span class="dot" style="background:var(--success)"></span> Answered</div>
+            <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Not Answered</div>
+            <div class="legend-item"><span class="dot" style="background:var(--warning)"></span> Marked for Review</div>
+            <div class="legend-item"><span class="dot" style="background:#e9ecef"></span> Not Visited</div>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="top-bar">
+            <h3 style="margin:0;">AI Generated Exam</h3>
+            <div class="timer-box">⏳ Time Left: <span id="time">00:00</span></div>
+        </div>
+
+        <form th:action="@{/submitAnswer}" method="post" id="quizForm" class="question-container">
+            <div class="q-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: #666;">
+                    <span>Question <strong th:text="${displayIndex}"></strong> of <strong th:text="${total}"></strong></span>
+                    <span>Single Choice</span>
+                </div>
+                
+                <div class="q-header" th:text="${q.text}">Question Text Goes Here</div>
+
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="selectedOption" value="A" th:checked="${currentSelection == 'A'}">
+                        <span th:text="${q.optionA}">Option A</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="selectedOption" value="B" th:checked="${currentSelection == 'B'}">
+                        <span th:text="${q.optionB}">Option B</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="selectedOption" value="C" th:checked="${currentSelection == 'C'}">
+                        <span th:text="${q.optionC}">Option C</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="selectedOption" value="D" th:checked="${currentSelection == 'D'}">
+                        <span th:text="${q.optionD}">Option D</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" style="display:none;" id="hiddenSubmit"></button>
+        </form>
+
+        <div class="footer-controls">
+            <div>
+                <button type="submit" form="quizForm" name="action" value="saveNext" class="btn btn-success">Save & Next</button>
+                <button type="submit" form="quizForm" name="action" value="markReview" class="btn btn-warning">Mark for Review</button>
+                <button type="submit" form="quizForm" name="action" value="clear" class="btn btn-secondary">Clear</button>
+            </div>
+            <button type="submit" form="quizForm" name="action" value="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to finish the exam?')">Submit Test</button>
+        </div>
+    </div>
+
+</body>
+</html>

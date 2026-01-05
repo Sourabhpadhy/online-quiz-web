@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Result</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .result-card {
+            background: white;
+            width: 500px;
+            padding: 0;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #28a745;
+            color: white;
+            padding: 30px;
+        }
+        .header h1 { margin: 0; font-size: 2rem; }
+        .header p { margin: 5px 0 0; opacity: 0.9; }
+
+        .details {
+            padding: 30px;
+            text-align: left;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        .info-label { color: #888; font-size: 0.85rem; }
+        .info-value { font-weight: 600; color: #333; }
+
+        .score-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .big-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #28a745;
+            line-height: 1;
+        }
+        .total-text { color: #888; font-size: 1.2rem; }
+
+        .btn-home {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background: #000; }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <div class="header">
+            <h1>Result Declared</h1>
+            <p>Computer Based Test (CBT) Report</p>
+        </div>
+        
+        <div class="details">
+            <div class="info-grid">
+                <div>
+                    <div class="info-label">Student Name</div>
+                    <div class="info-value" th:text="${name}">John Doe</div>
+                </div>
+                <div>
+                    <div class="info-label">Enrollment No</div>
+                    <div class="info-value" th:text="${enrollment}">0827CS211</div>
+                </div>
+                <div>
+                    <div class="info-label">Class / Sem</div>
+                    <div class="info-value" th:text="${sClass}">CS-A / 6th</div>
+                </div>
+                <div>
+                    <div class="info-label">Department</div>
+                    <div class="info-value" th:text="${dept}">CSE</div>
+                </div>
+                <div>
+                    <div class="info-label">Time Taken</div>
+                    <div class="info-value" th:text="${timeTaken}">05 min 20 sec</div>
+                </div>
+                <div>
+                    <div class="info-label">Status</div>
+                    <div class="info-value" style="color:green;">Completed</div>
+                </div>
+            </div>
+
+            <div class="score-box">
+                <div class="info-label" style="margin-bottom:5px;">FINAL SCORE</div>
+                <span class="big-score" th:text="${score}">8</span>
+                <span class="total-text">/ <span th:text="${total}">10</span></span>
+            </div>
+        </div>
+        
+        <a href="/" class="btn-home">Return to Home</a>
+    </div>
+</body>
+</html>
